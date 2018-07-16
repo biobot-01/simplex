@@ -26,5 +26,10 @@
   "bugs": {
     "url": "https://github.com/biobot-01/simplex/issues"
   },
-  "homepage": "https://github.com/biobot-01/simplex#readme"
+  "homepage": "https://github.com/biobot-01/simplex#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^5.0.0",
+    "gulp-sass": "^4.0.1"
+  }
 }
