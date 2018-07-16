@@ -2,7 +2,6 @@
 
 HTML5 Boilerplate and Bulma CSS framework for a starting template.
 
-###################################################################
 
 # [HTML5 Boilerplate](https://html5boilerplate.com/)
 
@@ -97,7 +96,6 @@ the [guidelines](.github/CONTRIBUTING.md):
 
 The code is available under the [MIT license](LICENSE.txt).
 
-###################################################################
 
 # [Bulma](https://bulma.io)
 
