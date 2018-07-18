@@ -10,6 +10,8 @@ const eslint = require('gulp-eslint');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
 const babel = require('gulp-babel');
+const postcss = require('gulp-postcss');
+const sourcemaps = require('gulp-sourcemaps');
 
 // Static server
 gulp.task('browser-sync', () => {
@@ -29,6 +31,20 @@ gulp.task('styles', () => {
         .pipe(browserSync.stream());
 });
 
+gulp.task('styles-dist', () => {
+    const plugins = [
+        autoprefixer(
+            {browsers: ['last 2 versions']}
+        )
+    ];
+    return gulp.src('assets/sass/**/*.scss')
+        .pipe(sourcemaps.init())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(postcss(plugins))
+        .pipe(sourcemaps.write('main.css.map'))
+        .pipe(gulp.dest('assets/css'));
+});
+
 // Concat all js files
 gulp.task('scripts', () => {
     return gulp.src('assests/js/*.js')
@@ -39,9 +55,11 @@ gulp.task('scripts', () => {
 
 gulp.task('scripts-dist', () => {
     return gulp.src('assests/js/*.js')
+        .pipe(sourcemaps.init())
         .pipe(babel())
         .pipe(concat('main.js'))
-        .pipe(uglify())
+        .pipe(uglify('main.min.js'))
+        .pipe(sourcemaps.write('main.js.map'))
         .pipe(gulp.dest('dist/js'));
 });
 
@@ -66,7 +84,7 @@ gulp.task('lint', () => {
 });
 
 // Watch for file changes
-gulp.task('watch', ['styles', 'lint'], () => {
+gulp.task('watch', ['browser-sync', 'styles', 'scripts', 'lint'], () => {
     gulp.watch('assets/sass/**/*.scss', ['styles']);
     gulp.watch('assets/js/*.js', ['lint']);
     gulp.watch('*.html', browserSync.reload);
@@ -74,4 +92,4 @@ gulp.task('watch', ['styles', 'lint'], () => {
 
 gulp.task('default', ['browser-sync', 'styles', 'scripts', 'lint', 'watch']);
 
-gulp.task('dist', ['copy-images', 'styles', 'lint', 'scripts-dist']);
+gulp.task('dist', ['copy-images', 'styles-dist', 'scripts-dist', 'lint']);
