@@ -7,6 +7,7 @@ const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
 const browserSync = require('browser-sync').create();
 const eslint = require('gulp-eslint');
+const concat = require('gulp-concat');
 
 // Static server
 gulp.task('browser-sync', () => {
@@ -30,6 +31,19 @@ gulp.task('styles', () => {
         }))
         .pipe(gulp.dest('assets/css'))
         .pipe(browserSync.stream());
+});
+
+// Concat all js files
+gulp.task('scripts', () => {
+    return gulp.src('assests/js/*.js')
+        .pipe(concat('main.js'))
+        .pipe(gulp.dest('dist/js'));
+});
+
+gulp.task('scripts-dist', () => {
+    return gulp.src('assests/js/*.js')
+        .pipe(concat('main.js'))
+        .pipe(gulp.dest('dist/js'));
 });
 
 // Lint all js files
