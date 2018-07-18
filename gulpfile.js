@@ -8,18 +8,13 @@ const autoprefixer = require('gulp-autoprefixer');
 const browserSync = require('browser-sync').create();
 const eslint = require('gulp-eslint');
 const concat = require('gulp-concat');
+const uglify = require('gulp-uglify');
 
 // Static server
 gulp.task('browser-sync', () => {
     browserSync.init({
         server: './'
     });
-});
-
-// Copy images from dev to production
-gulp.task('copy-images', () => {
-    return gulp.src('assets/img/*')
-        .pipe(gulp.dest('dist/img'));
 });
 
 // Compile sass into CSS and auto-inject into browsers
@@ -43,7 +38,14 @@ gulp.task('scripts', () => {
 gulp.task('scripts-dist', () => {
     return gulp.src('assests/js/*.js')
         .pipe(concat('main.js'))
+        .pipe(uglify())
         .pipe(gulp.dest('dist/js'));
+});
+
+// Copy images from dev to production
+gulp.task('copy-images', () => {
+    return gulp.src('assets/img/*')
+        .pipe(gulp.dest('dist/img'));
 });
 
 // Lint all js files
@@ -67,4 +69,4 @@ gulp.task('watch', ['styles', 'lint'], () => {
     gulp.watch('*.html', browserSync.reload);
 });
 
-gulp.task('default', ['browser-sync', 'copy-images', 'styles', 'lint', 'watch']);
+gulp.task('default', ['browser-sync', 'styles', 'scripts', 'copy-images', 'lint', 'watch']);
