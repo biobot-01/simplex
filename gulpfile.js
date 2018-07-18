@@ -9,6 +9,7 @@ const browserSync = require('browser-sync').create();
 const eslint = require('gulp-eslint');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
+const babel = require('gulp-babel');
 
 // Static server
 gulp.task('browser-sync', () => {
@@ -31,12 +32,14 @@ gulp.task('styles', () => {
 // Concat all js files
 gulp.task('scripts', () => {
     return gulp.src('assests/js/*.js')
+        .pipe(babel())
         .pipe(concat('main.js'))
         .pipe(gulp.dest('dist/js'));
 });
 
 gulp.task('scripts-dist', () => {
     return gulp.src('assests/js/*.js')
+        .pipe(babel())
         .pipe(concat('main.js'))
         .pipe(uglify())
         .pipe(gulp.dest('dist/js'));
@@ -69,4 +72,6 @@ gulp.task('watch', ['styles', 'lint'], () => {
     gulp.watch('*.html', browserSync.reload);
 });
 
-gulp.task('default', ['browser-sync', 'styles', 'scripts', 'copy-images', 'lint', 'watch']);
+gulp.task('default', ['browser-sync', 'styles', 'scripts', 'lint', 'watch']);
+
+gulp.task('dist', ['copy-images', 'styles', 'lint', 'scripts-dist']);
