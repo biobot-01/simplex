@@ -75,7 +75,7 @@ or [HTML5 Boilerplate v5](https://github.com/h5bp/html5-boilerplate/tree/v5.0.0)
 
 ## Documentation
 
-Take a look at the [documentation table of contents](dist/doc/TOC.md).
+Take a look at the [documentation table of contents](doc/TOC.md).
 This documentation is bundled with the project which makes it
 available for offline reading and provides a useful starting point for
 any documentation you want to write about your project.
@@ -83,13 +83,13 @@ any documentation you want to write about your project.
 
 ## Contributing
 
-Hundreds of developers have helped to make the HTML5 Boilerplate. Anyone is welcome to [contribute](.github/CONTRIBUTING.md),
+Hundreds of developers have helped to make the HTML5 Boilerplate. Anyone is welcome to [contribute](https://github.com/h5bp/html5-boilerplate/blob/master/.github/CONTRIBUTING.md),
 however, if you decide to get involved, please take a moment to review
-the [guidelines](.github/CONTRIBUTING.md):
+the [guidelines](https://github.com/h5bp/html5-boilerplate/blob/master/.github/CONTRIBUTING.md):
 
-* [Bug reports](.github/CONTRIBUTING.md#bugs)
-* [Feature requests](.github/CONTRIBUTING.md#features)
-* [Pull requests](.github/CONTRIBUTING.md#pull-requests)
+* [Bug reports](https://github.com/h5bp/html5-boilerplate/blob/master/.github/CONTRIBUTING.md#bugs)
+* [Feature requests](https://github.com/h5bp/html5-boilerplate/blob/master/.github/CONTRIBUTING.md#features)
+* [Pull requests](https://github.com/h5bp/html5-boilerplate/blob/master/.github/CONTRIBUTING.md#pull-requests)
 
 
 ## License
@@ -167,7 +167,7 @@ Internet Explorer (10+) is only partially supported.
 
 ## Documentation
 
-The documentation resides in the [docs](docs) directory, and is built with the Ruby-based [Jekyll](https://jekyllrb.com/) tool.
+The documentation resides in the [docs](https://github.com/jgthms/bulma/blob/master/docs) directory, and is built with the Ruby-based [Jekyll](https://jekyllrb.com/) tool.
 
 Browse the [online documentation here.](https://bulma.io/documentation/overview/start/)
 

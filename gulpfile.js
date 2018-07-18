@@ -15,6 +15,12 @@ gulp.task('browser-sync', () => {
     });
 });
 
+// Copy images from dev to production
+gulp.task('copy-images', () => {
+    return gulp.src('assets/img/*')
+        .pipe(gulp.dest('dist/img'));
+});
+
 // Compile sass into CSS and auto-inject into browsers
 gulp.task('styles', () => {
     return gulp.src('assets/sass/**/*.scss')
@@ -41,10 +47,10 @@ gulp.task('lint', () => {
 });
 
 // Watch for file changes
-gulp.task('watch', ['styles'], () => {
+gulp.task('watch', ['styles', 'lint'], () => {
     gulp.watch('assets/sass/**/*.scss', ['styles']);
     gulp.watch('assets/js/*.js', ['lint']);
     gulp.watch('*.html', browserSync.reload);
 });
 
-gulp.task('default', ['browser-sync', 'styles', 'lint', 'watch']);
+gulp.task('default', ['browser-sync', 'copy-images', 'styles', 'lint', 'watch']);
