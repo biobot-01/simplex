@@ -1,7 +1,7 @@
 /* eslint-env node */
 'use strict';
 
-// Pull in gulp task modules
+// Pull in gulp plugins
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
@@ -9,9 +9,12 @@ const browserSync = require('browser-sync').create();
 const eslint = require('gulp-eslint');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
-const babel = require('gulp-babel');
 const postcss = require('gulp-postcss');
 const sourcemaps = require('gulp-sourcemaps');
+const babel = rquire('gulp-babel');
+const imageResize = require('gulp-image-resize');
+const imagemin = require('gulp-imagemin');
+const pngquant = require('imagemin-pngquant');
 
 // Static server
 gulp.task('browser-sync', () => {
@@ -33,9 +36,9 @@ gulp.task('styles', () => {
 
 gulp.task('styles-dist', () => {
     const plugins = [
-        autoprefixer(
-            {browsers: ['last 2 versions']}
-        )
+        autoprefixer({
+            browsers: ['last 2 versions']
+        })
     ];
     return gulp.src('assets/sass/**/*.scss')
         .pipe(sourcemaps.init())
@@ -61,6 +64,28 @@ gulp.task('scripts-dist', () => {
         .pipe(uglify('main.min.js'))
         .pipe(sourcemaps.write('main.js.map'))
         .pipe(gulp.dest('dist/js'));
+});
+
+// Compress and optimize  images
+gulp.task('images', () => {
+    return gulp.src('assets/img/*')
+        .pipe(imagemin([
+            imagemin.gifsicle({
+                interlaced: true
+            }),
+            imagemin.jpegtran({
+                progressive: true
+            }),
+            imagemin.optipng({
+                optimizationLevel: 5
+            }),
+            imagemin.svgo({
+                removeViewBox: true
+            })
+        ],
+        {use: [pngquant()]}
+        ))
+        .pipe(gulp.dest('dist/img'));
 });
 
 // Copy images from dev to production
