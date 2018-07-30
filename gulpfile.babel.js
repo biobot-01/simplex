@@ -31,7 +31,7 @@ import browserSync from 'browser-sync';
 
 // Specifiy file path constants
 const dirs = {
-  src: 'assests',
+  src: 'assets',
   dest: 'dist'
 };
 const paths = {
@@ -116,13 +116,14 @@ export function copyJS() {
 // Copy all functions bundled as one task
 export const copyAll = gulp.parallel(copyHTML, copyCSS, copyJS);
 
-// Resize, minify and optimize all images
-export function images() {
+// Resize and minify all images
+export function images(done) {
   const imageSizes = [
     {width: 1200, crop: false, suffix: '_1200'},
-    {width: 800, crop: true, suffix: '_800'},
-    {width: 400, crop: true, suffix: '_400'}
+    {width: 800, crop: false, suffix: '_800'},
+    {width: 400, crop: false, suffix: '_400'}
   ];
+
   const pluginsOptions = [
     imagemin.gifsicle({
       interlaced: true
@@ -141,7 +142,7 @@ export function images() {
     })
   ];
 
-  imageSizes.forEach((image) => {
+  imageSizes.forEach(function(image) {
     return gulp.src(paths.images.src)
       .pipe(imageResize({
         width: image.width,
@@ -150,13 +151,17 @@ export function images() {
         imageMagick: true
       }))
       .pipe(cache(imagemin(pluginsOptions,
-        {use: [pngquant()]}
+        {
+          use: [pngquant()],
+          verbose: true
+        }
       )))
       .pipe(rename({
         suffix: image.suffix
       }))
       .pipe(gulp.dest(paths.images.dest));
   });
+  done();
 }
 
 // Compile sass into CSS and auto-inject into browsers
@@ -172,6 +177,7 @@ export function styles() {
     .pipe(gulp.dest(paths.styles.dest))
     .pipe(reload);
 }
+gulp.task('styles', styles);
 
 export function stylesDist() {
   const plugins = [
