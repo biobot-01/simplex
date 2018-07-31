@@ -54,8 +54,15 @@ const paths = {
     fileName: 'main.min.js'
   },
   vendors: {
-    css: `${dirs.src}/css/*.css`,
-    js: `${dirs.src}/js/vendor/*.js`
+    src: {
+      css: `${dirs.src}/css/*.css`,
+      js: `${dirs.src}/js/vendor/*.js`
+    },
+    dest: {
+      css: `${dirs.dest}/css`,
+      js: `${dirs.dest}/js/vendor`
+    }
+
   }
 };
 
@@ -102,15 +109,15 @@ export function copyHTML() {
 
 // Minify and copy all css vendor dependencies
 export function copyCSS() {
-  return gulp.src(paths.vendors.css)
+  return gulp.src(paths.vendors.src.css)
     .pipe(cleanCSS())
-    .pipe(gulp.dest(paths.styles.dest));
+    .pipe(gulp.dest(paths.vendors.dest.css));
 }
 
 // Copy all js vendor dependencies
 export function copyJS() {
-  return gulp.src(paths.vendors.js)
-    .pipe(gulp.dest(paths.scripts.dest));
+  return gulp.src(paths.vendors.src.js)
+    .pipe(gulp.dest(paths.vendors.dest.js));
 }
 
 // Copy all functions bundled as one task
@@ -164,7 +171,7 @@ export function images(done) {
   done();
 }
 
-// Compile sass into CSS and auto-inject into browsers
+// Compile sass into CSS
 export function styles() {
   return gulp.src(paths.styles.src)
     .pipe(sass({
@@ -174,8 +181,7 @@ export function styles() {
       browsers: ['last 2 versions']
     }))
     .pipe(rename(paths.styles.fileName))
-    .pipe(gulp.dest(paths.styles.dest))
-    .pipe(reload);
+    .pipe(gulp.dest(paths.styles.dest));
 }
 
 export function stylesDist() {
@@ -231,11 +237,11 @@ export function lint() {
 export function watch() {
   gulp.watch(paths.html.src, copyHTML);
   gulp.watch(paths.html.dest, reload);
-  gulp.watch(paths.styles.src, styles);
+  gulp.watch(paths.styles.src, gulp.series(styles, reload));
   gulp.watch(paths.scripts.src, gulp.series(lint, scripts, reload));
 }
 
-const dev = gulp.series(clean, copyAll, images, styles, lint, scripts, serve, watch);
+const dev = gulp.series(clean, copyAll, styles, lint, scripts, serve, watch);
 export default dev;
 
 export const dist = gulp.series(cleanAll, copyAll, images, stylesDist, lint, scriptsDist);
