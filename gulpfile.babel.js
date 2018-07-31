@@ -92,7 +92,7 @@ export const cleanImages = (done) => {
   done();
 };
 
-export const cleanAll = gulp.parallel(clean, cleanImages);
+export const cleanAll = gulp.series(cleanImages, clean);
 
 // Copy all HTML files
 export function copyHTML() {
@@ -177,7 +177,6 @@ export function styles() {
     .pipe(gulp.dest(paths.styles.dest))
     .pipe(reload);
 }
-gulp.task('styles', styles);
 
 export function stylesDist() {
   const plugins = [
