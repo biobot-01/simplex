@@ -46,6 +46,7 @@ const paths = {
   css: {
     src: `${dirs.src}/sass/*.scss`,
     dest: `${dirs.dest}/css`,
+    suffix: '.min',
     vendor: {
       src: `${dirs.src}/css/*.css`
     }
@@ -178,7 +179,7 @@ function styles() {
       browsers: ['last 2 versions']
     }))
     .pipe(rename({
-      suffix:'.min'
+      suffix: paths.css.suffix
     }))
     .pipe(gulp.dest(paths.css.dest))
     .pipe(server.stream());
@@ -198,12 +199,12 @@ function stylesDist() {
     .pipe(cleanCSS())
     .pipe(sourcemaps.write())
     .pipe(rename({
-      suffix: '.min'
+      suffix: paths.css.suffix
     }))
     .pipe(gulp.dest(paths.css.dest));
 }
 
-// Transpile es6 to es5 & concat all js files - dev & build
+// Transpile es6 to es5 & concat all js files - dev
 function scripts() {
   return gulp.src(paths.js.src)
     .pipe(babel())
@@ -211,7 +212,7 @@ function scripts() {
     .pipe(gulp.dest(paths.js.dest));
 }
 
-// Build production ready js file
+// Build production ready js file - build
 function scriptsDist() {
   return gulp.src(paths.js.src)
     .pipe(sourcemaps.init())
@@ -222,7 +223,7 @@ function scriptsDist() {
     .pipe(gulp.dest(paths.js.dest));
 }
 
-// Lint all js files - dev
+// Lint all js files - dev & build
 function lint() {
   return gulp.src([paths.js.src])
     // eslint() attaches the lint output to the "eslint" property
@@ -235,6 +236,9 @@ function lint() {
     // lint error, return the stream and pipe to failAfterError last.
     .pipe(eslint.failAfterError());
 }
+
+const lintScripts = gulp.series(lint, scripts);
+const lintScriptsDist = gulp.series(lint, scriptsDist);
 
 // Watch for folder/ file changes - dev
 function watch() {
@@ -250,10 +254,10 @@ function watch() {
 
 // Gulp commands names
 // Dev command
-const dev = gulp.parallel(copyAll, styles, gulp.series(lint, scripts), serve, watch);
+const dev = gulp.series(copyAll, styles, lintScripts, serve, watch);
 
 // Default gulp command
 export default dev;
 
 // Build command for production
-export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, stylesDist, gulp.series(lint, scriptsDist)));
+export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, stylesDist, lintScriptsDist));
