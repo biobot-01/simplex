@@ -21,7 +21,7 @@ import browserSync from 'browser-sync';
 
 /*
   -- TOP LEVEL FUNCTIONS --
-  gulp.task - Define tasks
+  gulp.task - Define tasks || use plain functions
   gulp.src - Point to files to use
   gulp.dest - Points to folder to output
   gulp.watch - Watch files and folders for changes
@@ -29,7 +29,7 @@ import browserSync from 'browser-sync';
   gulp.parallel - Execute list of tasks together
 */
 
-// Specifiy file path constants
+// Specifiy folder & file path constants
 const dirs = {
   src: 'assets',
   dest: 'dist'
@@ -43,34 +43,29 @@ const paths = {
     src: `${dirs.src}/img/*`,
     dest: `${dirs.dest}/img`
   },
-  styles: {
+  css: {
     src: `${dirs.src}/sass/*.scss`,
     dest: `${dirs.dest}/css`,
-    fileName: 'main.min.css'
+    vendor: {
+      src: `${dirs.src}/css/*.css`
+    }
   },
-  scripts: {
+  js: {
     src: `${dirs.src}/js/*.js`,
     dest: `${dirs.dest}/js`,
-    fileName: 'main.min.js'
-  },
-  vendors: {
-    src: {
-      css: `${dirs.src}/css/*.css`,
-      js: `${dirs.src}/js/vendor/*.js`
-    },
-    dest: {
-      css: `${dirs.dest}/css`,
-      js: `${dirs.dest}/js/vendor`
+    fileName: 'main.min.js',
+    vendor: {
+      src: `${dirs.src}/js/vendor/*.js`,
+      dest: `${dirs.dest}/js/vendor`
     }
-
   }
 };
 
 // Create an instance of a server
 const server = browserSync.create();
 
-// Static server function and export as task
-export function serve(done) {
+// Create static server function
+function serve(done) {
   server.init({
     server: {
       baseDir: paths.html.dest
@@ -79,51 +74,51 @@ export function serve(done) {
   done();
 }
 
-// Create reload function and export as constant
-export const reload = (done) => {
+// Create reload function
+const reload = (done) => {
   server.reload({
     stream: true
   });
   done();
 };
 
-// Clean dist folder
+// Clean dist folder - dev & build
 export const clean = (done) => {
   del([paths.html.dest]);
   done();
 };
 
-// Clean cached images from dist folder
-export const cleanImages = (done) => {
+// Clean cached images from dist folder - build
+const cleanImages = (done) => {
   cache.clearAll();
   done();
 };
 
-export const cleanAll = gulp.series(cleanImages, clean);
+const cleanAll = gulp.series(cleanImages, clean);
 
 // Copy all HTML files
-export function copyHTML() {
+function copyHTML() {
   return gulp.src(paths.html.src)
     .pipe(gulp.dest(paths.html.dest));
 }
 
 // Minify and copy all css vendor dependencies
-export function copyCSS() {
-  return gulp.src(paths.vendors.src.css)
+function copyCSS() {
+  return gulp.src(paths.css.vendor.src)
     .pipe(cleanCSS())
-    .pipe(gulp.dest(paths.vendors.dest.css));
+    .pipe(gulp.dest(paths.css.dest));
 }
 
 // Copy all js vendor dependencies
-export function copyJS() {
-  return gulp.src(paths.vendors.src.js)
-    .pipe(gulp.dest(paths.vendors.dest.js));
+function copyJS() {
+  return gulp.src(paths.js.vendor.src)
+    .pipe(gulp.dest(paths.js.vendor.dest));
 }
 
-// Copy all functions bundled as one task
-export const copyAll = gulp.parallel(copyHTML, copyCSS, copyJS);
+// Copy all functions const
+const copyAll = gulp.parallel(copyHTML, copyCSS, copyJS);
 
-// Resize and minify all images
+// Resize and minify all images - use as gulp images command
 export function images(done) {
   const imageSizes = [
     {width: 1200, crop: false, suffix: '_1200'},
@@ -150,13 +145,15 @@ export function images(done) {
   ];
 
   imageSizes.forEach(function(image) {
+    const resizeSettings = {
+      width: image.width,
+      crop: image.crop,
+      upscale: false,
+      imageMagick: true
+    };
+
     return gulp.src(paths.images.src)
-      .pipe(imageResize({
-        width: image.width,
-        crop: image.crop,
-        upscale: false,
-        imageMagick: true
-      }))
+      .pipe(imageResize(resizeSettings))
       .pipe(cache(imagemin(pluginsOptions,
         {
           use: [pngquant()],
@@ -171,57 +168,63 @@ export function images(done) {
   done();
 }
 
-// Compile sass into CSS
-export function styles() {
-  return gulp.src(paths.styles.src)
+// Compile sass into CSS & auto-inject into browser - dev
+function styles() {
+  return gulp.src(paths.css.src)
     .pipe(sass({
       outputStyle: 'compressed'
     }).on('error', sass.logError))
     .pipe(autoprefixer({
       browsers: ['last 2 versions']
     }))
-    .pipe(rename(paths.styles.fileName))
-    .pipe(gulp.dest(paths.styles.dest));
+    .pipe(rename({
+      suffix:'.min'
+    }))
+    .pipe(gulp.dest(paths.css.dest))
+    .pipe(server.stream());
 }
 
-export function stylesDist() {
+// Build production ready CSS file - build
+function stylesDist() {
   const plugins = [
     autoprefixer({
       browsers: ['last 2 versions']
     })
   ];
-  return gulp.src(paths.styles.src)
+  return gulp.src(paths.css.src)
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
     .pipe(postcss(plugins))
     .pipe(cleanCSS())
     .pipe(sourcemaps.write())
-    .pipe(rename(paths.styles.fileName))
-    .pipe(gulp.dest(paths.styles.dest));
+    .pipe(rename({
+      suffix: '.min'
+    }))
+    .pipe(gulp.dest(paths.css.dest));
 }
 
-// Transpile es6 to es5 and concat all js files
-export function scripts() {
-  return gulp.src(paths.scripts.src)
+// Transpile es6 to es5 & concat all js files - dev & build
+function scripts() {
+  return gulp.src(paths.js.src)
     .pipe(babel())
-    .pipe(concat(paths.scripts.fileName))
-    .pipe(gulp.dest(paths.scripts.dest));
+    .pipe(concat(paths.js.fileName))
+    .pipe(gulp.dest(paths.js.dest));
 }
 
-export function scriptsDist() {
-  return gulp.src(paths.scripts.src)
+// Build production ready js file
+function scriptsDist() {
+  return gulp.src(paths.js.src)
     .pipe(sourcemaps.init())
     .pipe(babel())
-    .pipe(concat())
+    .pipe(concat(paths.js.fileName))
     .pipe(uglify())
     .pipe(sourcemaps.write())
-    .pipe(rename(paths.scripts.fileName))
-    .pipe(gulp.dest(paths.scripts.dest));
+    .pipe(gulp.dest(paths.js.dest));
 }
 
-// Lint all js files
-export function lint() {
-  return gulp.src([paths.scripts.src])
+// Lint all js files - dev
+function lint() {
+  return gulp.src([paths.js.src])
     // eslint() attaches the lint output to the "eslint" property
     // of the file object so it can be used by other modules.
     .pipe(eslint())
@@ -233,15 +236,24 @@ export function lint() {
     .pipe(eslint.failAfterError());
 }
 
-// Watch for file changes
-export function watch() {
+// Watch for folder/ file changes - dev
+function watch() {
   gulp.watch(paths.html.src, copyHTML);
   gulp.watch(paths.html.dest, reload);
-  gulp.watch(paths.styles.src, gulp.series(styles, reload));
-  gulp.watch(paths.scripts.src, gulp.series(lint, scripts, reload));
+  gulp.watch(paths.css.src, styles);
+  gulp.watch(paths.js.src, gulp.series(lint, scripts, reload));
+  gulp.watch(paths.css.vendor.src, copyCSS);
+  gulp.watch(paths.css.dest, reload);
+  gulp.watch(paths.js.vendor.src, copyJS);
+  gulp.watch(paths.js.vendor.dest, reload);
 }
 
-const dev = gulp.series(clean, copyAll, styles, lint, scripts, serve, watch);
+// Gulp commands names
+// Dev command
+const dev = gulp.parallel(copyAll, styles, gulp.series(lint, scripts), serve, watch);
+
+// Default gulp command
 export default dev;
 
-export const dist = gulp.series(cleanAll, copyAll, images, stylesDist, lint, scriptsDist);
+// Build command for production
+export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, stylesDist, gulp.series(lint, scriptsDist)));
