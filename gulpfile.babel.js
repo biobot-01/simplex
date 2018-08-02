@@ -7,8 +7,10 @@ import pngquant from 'imagemin-pngquant';
 import imageResize from 'gulp-image-resize';
 import cache from 'gulp-cache';
 import sass from 'gulp-sass';
-import autoprefixer from 'gulp-autoprefixer';
-import postcss from 'gulp-postcss';
+import autoprefixer from 'autoprefixer';
+import gulpAutoprefixer from 'gulp-autoprefixer';
+import postcss from 'postcss';
+import gulpPostcss from 'gulp-postcss';
 import cleanCSS from 'gulp-clean-css';
 import eslint from 'gulp-eslint';
 import babel from 'gulp-babel';
@@ -46,7 +48,7 @@ const paths = {
   css: {
     src: `${dirs.src}/sass/*.scss`,
     dest: `${dirs.dest}/css`,
-    suffix: '.min',
+    fileName: 'main.min.css',
     vendor: {
       src: `${dirs.src}/css/*.css`
     }
@@ -170,17 +172,16 @@ export function images(done) {
 }
 
 // Compile sass into CSS & auto-inject into browser - dev
+
 function styles() {
   return gulp.src(paths.css.src)
     .pipe(sass({
       outputStyle: 'compressed'
     }).on('error', sass.logError))
-    .pipe(autoprefixer({
+    .pipe(gulpAutoprefixer({
       browsers: ['last 2 versions']
     }))
-    .pipe(rename({
-      suffix: paths.css.suffix
-    }))
+    .pipe(rename(paths.css.fileName))
     .pipe(gulp.dest(paths.css.dest))
     .pipe(server.stream());
 }
@@ -195,12 +196,10 @@ function stylesDist() {
   return gulp.src(paths.css.src)
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
-    .pipe(postcss(plugins))
+    .pipe(gulpPostcss(plugins))
     .pipe(cleanCSS())
-    .pipe(sourcemaps.write())
-    .pipe(rename({
-      suffix: paths.css.suffix
-    }))
+    .pipe(sourcemaps.write('../maps'))
+    .pipe(rename(paths.css.fileName))
     .pipe(gulp.dest(paths.css.dest));
 }
 

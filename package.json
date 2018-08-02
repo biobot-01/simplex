@@ -33,6 +33,7 @@
     ]
   },
   "devDependencies": {
+    "autoprefixer": "^9.0.2",
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
     "browser-sync": "^2.24.6",
@@ -51,6 +52,7 @@
     "gulp-sass": "^4.0.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
-    "imagemin-pngquant": "^6.0.0"
+    "imagemin-pngquant": "^6.0.0",
+    "postcss": "^7.0.2"
   }
 }
