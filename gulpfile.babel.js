@@ -20,6 +20,7 @@ import sourcemaps from 'gulp-sourcemaps';
 import rename from 'gulp-rename';
 import del from 'del';
 import browserSync from 'browser-sync';
+import ghPages from 'gulp-gh-pages';
 
 /*
   -- TOP LEVEL FUNCTIONS --
@@ -260,3 +261,9 @@ export default dev;
 
 // Build command for production
 export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, stylesDist, lintScriptsDist));
+
+// Deploy to gh-pages
+export const deploy = () => {
+  return gulp.src(`${dirs.dest}/**/*`)
+    .pipe(ghPages());
+}
