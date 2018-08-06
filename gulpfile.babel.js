@@ -9,8 +9,7 @@ import cache from 'gulp-cache';
 import sass from 'gulp-sass';
 import autoprefixer from 'autoprefixer';
 import gulpAutoprefixer from 'gulp-autoprefixer';
-import postcss from 'postcss';
-import gulpPostcss from 'gulp-postcss';
+import postcss from 'gulp-postcss';
 import cleanCSS from 'gulp-clean-css';
 import eslint from 'gulp-eslint';
 import babel from 'gulp-babel';
@@ -86,9 +85,9 @@ const reload = (done) => {
   done();
 };
 
-// Clean dist folder - dev & build
+// Clean dist folder & gh-pages generated folder - dev & build
 export const clean = (done) => {
-  del([paths.html.dest]);
+  del([paths.html.dest, '.publish']);
   done();
 };
 
@@ -173,7 +172,6 @@ export function images(done) {
 }
 
 // Compile sass into CSS & auto-inject into browser - dev
-
 function styles() {
   return gulp.src(paths.css.src)
     .pipe(sass({
@@ -197,7 +195,7 @@ function stylesDist() {
   return gulp.src(paths.css.src)
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
-    .pipe(gulpPostcss(plugins))
+    .pipe(postcss(plugins))
     .pipe(cleanCSS())
     .pipe(sourcemaps.write('../maps'))
     .pipe(rename(paths.css.fileName))
@@ -266,4 +264,4 @@ export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, styles
 export const deploy = () => {
   return gulp.src(`${dirs.dest}/**/*`)
     .pipe(ghPages());
-}
+};
