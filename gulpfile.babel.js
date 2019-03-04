@@ -1,4 +1,21 @@
 /* eslint-env node */
+
+/* Gulp file using Gulp 4 with es6 syntax
+ * Implements:
+ *    1. Live reloads browser with BrowserSync.
+ *    2. CSS: Sass to CSS transpile, error catching,
+ *       autoprefixer, souremaps, minification, rename file,
+ *       & copy vendor libs.
+ *    3. JS: babel transpile (es6 -> es5), linting,
+ *       sourcemaps, minification, concatenation, rename
+ *       file, copy vendor libs.
+ *    4. Images: Resizes & minifies SVG, PNG, JPEG & GIF
+ *       images.
+ *    5. Watches files for changes in HTML, CSS & JS.
+ *    6. Inject CSS into browser
+ *    7. Compile for development & production build
+ */
+
 'use strict';
 // Pull in gulp plugins
 import gulp from 'gulp';
@@ -34,32 +51,46 @@ import ghPages from 'gulp-gh-pages';
 // Specifiy folder & file path constants
 const dirs = {
   src: 'assets',
-  dest: 'dist'
+  dest: 'dist',
+  img: {
+    src: `${dirs.src}/img`,
+    dest: `${dirs.dest}/img`
+  },
+  css: {
+    src: `${dirs.src}`,
+    dest: `${dirs.dest}/css`
+  },
+  js: {
+    src: `${dirs.src}/js`,
+    dest: `${dirs.dest}/js`
+  }
 };
+const baseFileName = 'main.min';
 const paths = {
   html: {
     src: '*.html',
     dest: `${dirs.dest}`
   },
   images: {
-    src: `${dirs.src}/img/*`,
-    dest: `${dirs.dest}/img`
+    src: `${dirs.img.src}/*`,
+    dest: `${dirs.img.dest}`
   },
   css: {
-    src: `${dirs.src}/sass/*.scss`,
-    dest: `${dirs.dest}/css`,
-    fileName: 'main.min.css',
+    src: `${dirs.css.src}/sass/*.scss`,
+    dest: `${dirs.css.dest}`,
+    fileName: `${baseFileName}.css`,
     vendor: {
-      src: `${dirs.src}/css/*.css`
+      src: `${dirs.css.src}/css/*.css`,
+      dest: `${dirs.css.dest}`
     }
   },
   js: {
-    src: `${dirs.src}/js/*.js`,
-    dest: `${dirs.dest}/js`,
-    fileName: 'main.min.js',
+    src: `${dirs.js.src}/*.js`,
+    dest: `${dirs.js.dest}`,
+    fileName: `${baseFileName}.js`,
     vendor: {
-      src: `${dirs.src}/js/vendor/*.js`,
-      dest: `${dirs.dest}/js/vendor`
+      src: `${dirs.js.src}/vendor/*.js`,
+      dest: `${dirs.js.dest}/vendor`
     }
   }
 };
@@ -109,7 +140,7 @@ function copyHTML() {
 function copyCSS() {
   return gulp.src(paths.css.vendor.src)
     .pipe(cleanCSS())
-    .pipe(gulp.dest(paths.css.dest));
+    .pipe(gulp.dest(paths.css.vendor.dest));
 }
 
 // Copy all js vendor dependencies
@@ -217,7 +248,7 @@ function scriptsDist() {
     .pipe(babel())
     .pipe(concat(paths.js.fileName))
     .pipe(uglify())
-    .pipe(sourcemaps.write())
+    .pipe(sourcemaps.write('../maps'))
     .pipe(gulp.dest(paths.js.dest));
 }
 
@@ -238,14 +269,14 @@ function lint() {
 const lintScripts = gulp.series(lint, scripts);
 const lintScriptsDist = gulp.series(lint, scriptsDist);
 
-// Watch for folder/ file changes - dev
+// Watch for folder/file changes - dev
 function watch() {
   gulp.watch(paths.html.src, copyHTML);
-  gulp.watch(paths.html.dest, reload);
+  gulp.watch(`${paths.html.dest}/${paths.html.src}`, reload);
   gulp.watch(paths.css.src, styles);
-  gulp.watch(paths.js.src, gulp.series(lint, scripts, reload));
+  gulp.watch(paths.js.src, gulp.series(lintScripts, reload));
   gulp.watch(paths.css.vendor.src, copyCSS);
-  gulp.watch(paths.css.dest, reload);
+  gulp.watch(paths.css.vendor.dest, reload);
   gulp.watch(paths.js.vendor.src, copyJS);
   gulp.watch(paths.js.vendor.dest, reload);
 }
@@ -258,10 +289,12 @@ const dev = gulp.series(copyAll, styles, lintScripts, serve, watch);
 export default dev;
 
 // Build command for production
-export const build = gulp.series(cleanAll, gulp.parallel(copyAll, images, stylesDist, lintScriptsDist));
+export const build = gulp.series(cleanAll, gulp.parallel(copyAll, stylesDist, lintScriptsDist));
 
 // Deploy to gh-pages
 export const deploy = () => {
   return gulp.src(`${dirs.dest}/**/*`)
-    .pipe(ghPages());
+    .pipe(ghPages({
+      cacheDir: dirs.dest
+    }));
 };
